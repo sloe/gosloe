@@ -1,0 +1,12 @@
+
+app:
+  aeprojectdir: "../chanblob/aftereffects"
+  ffprobe: "..\\sloe-winbin\\ffmpeg\\bin\\ffprobe.exe"
+  loglevel: "DEBUG"
+  plugindirs: "sloeplugins"
+  primacies: "primary,final"
+  sandboxdir: "C:\\sloesandbox"
+  #treeroot: "\\service\oarstack\oarstack"
+  treeroot: "C:\\oarstack"
+  #treeroot: "D:\gozleme\OneDrive\oarstack"
+  worths: "precious,derived,junk"
