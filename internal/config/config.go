@@ -1,12 +1,13 @@
 package config
 
 import (
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	AppConfig AppConfig `yaml:"app"`
+	AppConfig `yaml:"app"`
 }
 
 func NewConfig() Config {
