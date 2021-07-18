@@ -13,7 +13,10 @@ type App struct {
 }
 
 func NewApp() *App {
-	return &App{}
+	return &App{
+		config: config.NewConfig(),
+		tree:   *domain.NewSloeTree(),
+	}
 }
 
 func (app *App) WithConfig(config config.Config) *App {

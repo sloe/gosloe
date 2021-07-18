@@ -13,11 +13,17 @@ import (
 
 type SloeTree struct {
 	rootAlbum SloeNode
+	Albums    map[string]*SloeNode
+	Items     map[string]*SloeNode
+	Nodes     map[string]*SloeNode
 }
 
 func NewSloeTree() *SloeTree {
 	return &SloeTree{
 		rootAlbum: NewSloeNode(),
+		Albums:    map[string]*SloeNode{},
+		Items:     map[string]*SloeNode{},
+		Nodes:     map[string]*SloeNode{},
 	}
 }
 
@@ -92,7 +98,7 @@ func (t *SloeTree) LoadFromSource(rootPath string) error {
 		if subTree == "." {
 			subTree = ""
 		}
-		parentSubtree := filepath.Dir(subTree)
+		parentSubtree := strings.Replace(filepath.Dir(subTree), "\\", "/", -1)
 		if parentSubtree == "." {
 			parentSubtree = ""
 		}
@@ -103,7 +109,61 @@ func (t *SloeTree) LoadFromSource(rootPath string) error {
 		} else {
 			parentAlbum.AddChildObj(newAlbum)
 		}
+		t.Albums[newAlbum.Uuid] = newAlbum
 		albumsBySubpath[subTree] = newAlbum
+	}
+
+	parentAlbumFromPath := func(objPath string) (*SloeNode, error) {
+		subTree, err := filepath.Rel(rootPath, filepath.Dir(objPath))
+		if err != nil {
+			return nil, err
+		}
+		subTree = strings.Replace(subTree, "\\", "/", -1)
+		if subTree == "." {
+			subTree = ""
+		}
+		parentAlbum, ok := albumsBySubpath[subTree]
+		if !ok {
+			return nil, fmt.Errorf("Object has no parent album")
+		}
+		return parentAlbum, nil
+	}
+
+	for _, itemDef := range foundFiles["ITEM"] {
+		destAlbum, err := parentAlbumFromPath(itemDef.FullPath)
+		if err != nil {
+			log.WithError(err).WithFields(log.Fields{"itemDef": itemDef}).Error("Object has no parent album - not loading")
+		} else {
+			newItem, err := loadNodeFromPath(itemDef.FullPath)
+			if err != nil {
+				log.WithError(err).WithFields(log.Fields{"itemDef": itemDef}).Error("Failed to load item")
+			} else {
+				destAlbum.AddChildObj(newItem)
+				t.Items[newItem.Uuid] = newItem
+			}
+		}
+	}
+
+	for objType, objList := range foundFiles {
+		switch objType {
+		case "ALBUM":
+		case "ITEM":
+		default:
+			for _, objDef := range objList {
+				destAlbum, err := parentAlbumFromPath(objDef.FullPath)
+				if err != nil {
+					log.WithError(err).WithFields(log.Fields{"objDef": objDef}).Error("Object has no parent album - not loading")
+				} else {
+					newItem, err := loadNodeFromPath(objDef.FullPath)
+					if err != nil {
+						log.WithError(err).WithFields(log.Fields{"objDef": objDef}).Error("Failed to load item")
+					} else {
+						destAlbum.AddChildObj(newItem)
+						t.Nodes[newItem.Uuid] = newItem
+					}
+				}
+			}
+		}
 	}
 
 	return nil
