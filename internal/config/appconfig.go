@@ -7,7 +7,9 @@ import (
 )
 
 type AppConfig struct {
-	TreeRoot string `yaml:"treeroot"`
+	TreeRoot      string `yaml:"treeroot"`
+	MuseApiKey    string `yaml:"museapikey"`
+	MuseUploadUrl string `yaml:"museuploadurl"`
 }
 
 func NewAppConfig() AppConfig {

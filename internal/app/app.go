@@ -31,5 +31,9 @@ func (app *App) Run() error {
 		return err
 	}
 	log.Infof("Tree loaded: %+v", app.tree)
+	err = SloeUpload(app.tree, app.config)
+	if err != nil {
+		return err
+	}
 	return nil
 }
